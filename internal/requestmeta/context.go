@@ -26,13 +26,6 @@ func WithPrincipal(ctx context.Context, principal domain.Principal) context.Cont
 	return context.WithValue(ctx, principalKey, principal)
 }
 
-func DetachForWrite(ctx context.Context) context.Context {
-	if ctx == nil {
-		return context.Background()
-	}
-	return context.WithoutCancel(ctx)
-}
-
 func Principal(ctx context.Context) (domain.Principal, bool) {
 	value, ok := ctx.Value(principalKey).(domain.Principal)
 	return value, ok
