@@ -131,20 +131,19 @@ func (s *CatalogService) MarkSampleReady(ctx context.Context, batchID string) (d
 		return domain.SampleBatch{}, err
 	}
 	var result domain.SampleBatch
-	writeCtx := requestmeta.DetachForWrite(ctx)
-	err := s.store.WithTx(writeCtx, func(tx repository.Tx) error {
-		batch, err := tx.GetSampleBatch(writeCtx, batchID)
+	err := s.store.WithTx(ctx, func(tx repository.Tx) error {
+		batch, err := tx.GetSampleBatch(ctx, batchID)
 		if err != nil {
 			return err
 		}
 		if err := batch.Transition(domain.SampleReady, s.clock.Now()); err != nil {
 			return err
 		}
-		if err := tx.UpdateSampleBatch(writeCtx, batch, batch.Version); err != nil {
+		if err := tx.UpdateSampleBatch(ctx, batch, batch.Version); err != nil {
 			return err
 		}
 		result = batch
-		return s.audit.Record(writeCtx, tx, "sample_ready", "sample_batch", batch.ID, "success", nil)
+		return s.audit.Record(ctx, tx, "sample_ready", "sample_batch", batch.ID, "success", nil)
 	})
 	return result, err
 }
